@@ -1,3 +1,8 @@
+# Rhythmic Structural Change
+
+This project's goal is to calculate the Structural Change (as defined in a paper by Mauch and levy, [Structural change on multiple time scales as a correlate of musical complexity](http://matthiasmauch.net/_pdf/mauch_scm_2011.pdf)) of rhythmic patterns in music. At the moment it is based on the RP_extract code. Perhaps later on additional audio features, such as chroma and MFCC, would be added as input vectors for the SC calculation. This is part of an on-going research, feel free to contact me. Adam
+
+
 # RP_extract:
 ## Rhythm Pattern Audio Feature Extractor
 for Music Similarity, Music Classification and Music Recommendation
