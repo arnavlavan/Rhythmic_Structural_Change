@@ -17,7 +17,7 @@ Note: All required functions are provided by the two main scientific libraries n
 Note: In case you alter the code to use transform2mel, librosa needs to be installed: pip install librosa
 '''
 
-from __future__ import print_function
+
 
 import numpy as np
 
@@ -347,8 +347,8 @@ def transform2phon(matrix):
         levels[np.where(matrix > db_thislev)] = lev + 2
 
     # the matrix 'levels' stores the correct Phon level for each data point
-    cbv_ind_hi = np.ravel_multi_index(dims=(table_dim,7), multi_index=np.array([np.tile(np.array([range(0,table_dim)]).transpose(),(1,t)), levels-1]), order='F')
-    cbv_ind_lo = np.ravel_multi_index(dims=(table_dim,7), multi_index=np.array([np.tile(np.array([range(0,table_dim)]).transpose(),(1,t)), levels-2]), order='F')
+    cbv_ind_hi = np.ravel_multi_index(dims=(table_dim,7), multi_index=np.array([np.tile(np.array([list(range(0,table_dim))]).transpose(),(1,t)), levels-1]), order='F')
+    cbv_ind_lo = np.ravel_multi_index(dims=(table_dim,7), multi_index=np.array([np.tile(np.array([list(range(0,table_dim))]).transpose(),(1,t)), levels-2]), order='F')
 
     # interpolation factor % OPT: pre-calc diff
     ifac = (matrix[:,0:t] - cbv.transpose().ravel()[cbv_ind_lo]) / (cbv.transpose().ravel()[cbv_ind_hi] - cbv.transpose().ravel()[cbv_ind_lo])
@@ -677,8 +677,8 @@ def rp_extract( wavedata,                          # pcm (wav) signal data norma
         # values verified
 
         # RP: RHYTHM PATTERNS
-        feature_part_xaxis1 = range(0,mod_ampl_limit)    # take first (opts.mod_ampl_limit) values of fft result including DC component
-        feature_part_xaxis2 = range(1,mod_ampl_limit+1)  # leave DC component and take next (opts.mod_ampl_limit) values of fft result
+        feature_part_xaxis1 = list(range(0,mod_ampl_limit))    # take first (opts.mod_ampl_limit) values of fft result including DC component
+        feature_part_xaxis2 = list(range(1,mod_ampl_limit+1))  # leave DC component and take next (opts.mod_ampl_limit) values of fft result
 
         if (include_DC):
             feature_part_xaxis_rp = feature_part_xaxis1
@@ -689,7 +689,7 @@ def rp_extract( wavedata,                          # pcm (wav) signal data norma
         fft_size = 2**(nextpow2(matrix.shape[1]))
 
         if (mod_ampl_limit >= fft_size):
-            raise(ValueError("mod_ampl_limit option must be smaller than FFT window size (" + str(fft_size) +  ")."))
+            raise ValueError
             # NOTE: in fact only half of it (256) makes sense due to the symmetry of the FFT result
         
         rhythm_patterns = np.zeros((matrix.shape[0], fft_size), dtype=np.complex128)
@@ -818,7 +818,7 @@ def self_test():
 if __name__ == '__main__':
 
     import sys
-    from audiofile_read import *       # import our library for reading wav and mp3 files
+    from .audiofile_read import *       # import our library for reading wav and mp3 files
 
     # process file given on command line or default song (included)
     if len(sys.argv) > 1:
@@ -861,14 +861,14 @@ if __name__ == '__main__':
                           mod_ampl_limit=mod_ampl_limit)
 
         # feat is a dict containing arrays for different feature sets
-        print("Successfully extracted features:" , feat.keys())
+        print("Successfully extracted features:" , list(feat.keys()))
 
     except ValueError as e:
         print(e)
         exit()
 
     # example print of first extracted feature vector
-    keys = feat.keys()
+    keys = list(feat.keys())
     k = keys[0]
 
     print(k.upper, " feature vector:")
@@ -878,7 +878,7 @@ if __name__ == '__main__':
     do_plots = False
 
     if do_plots:
-        from rp_plot import *
+        from .rp_plot import *
 
         plotrp(feat["rp"],rows=bark_bands,cols=mod_ampl_limit)
         plotrh(feat["rh"])

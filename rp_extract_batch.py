@@ -20,15 +20,15 @@ import datetime # for time printing
 import argparse
 import numpy as np
 
-from audiofile_read import * # reading wav and mp3 files
-from rp_feature_io import CSVFeatureWriter, HDF5FeatureWriter, read_csv_features, load_multiple_hdf5_feature_files
-import rp_extract as rp # Rhythm Pattern extractor
+from .audiofile_read import * # reading wav and mp3 files
+from .rp_feature_io import CSVFeatureWriter, HDF5FeatureWriter, read_csv_features, load_multiple_hdf5_feature_files
+from . import rp_extract as rp # Rhythm Pattern extractor
 
 
 # NOTE: this function has been moved to rp_feature_io.py and is maintained here for backwards compatibility
 
 def read_feature_files(filenamestub,ext,separate_ids=True,id_column=0):
-    from rp_feature_io import read_csv_features
+    from .rp_feature_io import read_csv_features
     return read_csv_features(filenamestub,ext,separate_ids,id_column)
 
 
@@ -69,7 +69,7 @@ def find_files(path,file_types=('.wav','.mp3'),relative_path = False,verbose=Fal
 
     all_files = []
 
-    for d in os.walk(unicode(path)):    # finds all subdirectories and gets a list of files therein
+    for d in os.walk(str(path)):    # finds all subdirectories and gets a list of files therein
         # subpath: complete sub directory path (full path)
         # filelist: files in that sub path (filenames only)
         (subpath, _, filelist) = d
@@ -80,7 +80,7 @@ def find_files(path,file_types=('.wav','.mp3'),relative_path = False,verbose=Fal
         if file_types:   # FILTER FILE LIST by FILE TYPE
             filelist = [ file for file in filelist if file.lower().endswith(file_types) ]
 
-        if (verbose): print subpath,":", len(filelist), "files found (" + file_type_string + ")"
+        if (verbose): print(subpath,":", len(filelist), "files found (" + file_type_string + ")")
 
         # add full absolute path
         filelist = [ subpath + os.sep + file for file in filelist ]
@@ -135,7 +135,7 @@ def mp3_to_wav_batch(path,outdir=None,audiofile_types=('.mp3','.aif','.aiff')):
 
         try:
             if not os.path.exists(wav_file):
-                print "Decoding:", n, "/", n_files, ":"
+                print("Decoding:", n, "/", n_files, ":")
                 if ext.lower() == '.mp3':
                     mp3_decode(file,wav_file)
                 elif ext.lower() == '.aif' or ext.lower() == '.aiff':
@@ -144,9 +144,9 @@ def mp3_to_wav_batch(path,outdir=None,audiofile_types=('.mp3','.aif','.aiff')):
                     if return_code != 0:
                         raise DecoderException("Problem appeared during decoding.", command=cmd)
             else:
-                print "Already existing: " + wav_file
+                print("Already existing: " + wav_file)
         except:
-            print "Not decoded " + file
+            print("Not decoded " + file)
 
 
 
@@ -216,7 +216,7 @@ def extract_all_files_generic(in_path,
     """
 
     if in_path.lower().endswith('.txt'):  # treat as input file list
-        from classes_io import read_filenames
+        from .classes_io import read_filenames
         filelist = read_filenames(in_path)
         in_path = path_prefix # in case path_prefix is passed it is added to files in extract_all_files
     elif os.path.isdir(in_path): # find files in path
@@ -247,7 +247,7 @@ def get_diff_filelist(feature_filename, filelist, feature_types, useHDF5=False, 
     if useHDF5: check_filename += '.h5'
     if not os.path.isfile(check_filename):
         if verbose:
-            print "WARNING: No previous feature file " + check_filename + " found. Will create new feature files."
+            print("WARNING: No previous feature file " + check_filename + " found. Will create new feature files.")
         return filelist # unchanged, as is
 
     if not useHDF5:
@@ -258,8 +258,8 @@ def get_diff_filelist(feature_filename, filelist, feature_types, useHDF5=False, 
     filelist_diff = list(set(filelist) - set(filelist_previous))
 
     if verbose:
-        print "Filelist has", len(filelist), "entries, found", len(filelist_previous), "previously analyzed files in feature file(s)."
-        print "Analyzing only", len(filelist_diff), "new files."
+        print("Filelist has", len(filelist), "entries, found", len(filelist_previous), "previously analyzed files in feature file(s).")
+        print("Analyzing only", len(filelist_diff), "new files.")
 
     return filelist_diff
 
@@ -341,13 +341,13 @@ def extract_all_files(filelist,
             else:
                 filename = fil
             if verbose:
-                print '#',n,'/',n_files,'(ETA: ' + timestr(remain_time) + "):", filename
+                print('#',n,'/',n_files,'(ETA: ' + timestr(remain_time) + "):", filename)
 
             # read audio file (wav or mp3)
             samplerate, samplewidth, data, decoder = audiofile_read(filename, verbose=verbose, include_decoder=True, no_extension_check=no_extension_check, force_resampling=force_resampling)
 
             # audio file info
-            if verbose: print samplerate, "Hz,", data.shape[1], "channel(s),", data.shape[0], "samples"
+            if verbose: print(samplerate, "Hz,", data.shape[1], "channel(s),", data.shape[0], "samples")
 
             # extract features
             # Note: the True/False flags are determined by checking if a feature is listed in 'ext' (see settings above)
@@ -395,11 +395,11 @@ def extract_all_files(filelist,
                 # TODO: only if we don't have out_file? maybe we want this as a general option
 
                 if feat_array == {}: # for first file, initialize empty array with dimension of the feature set
-                    for e in feat.keys():
+                    for e in list(feat.keys()):
                         feat_array[e] = np.empty((0,feat[e].shape[0]))
 
                 # store features in array
-                for e in feat.keys():
+                for e in list(feat.keys()):
                     feat_array[e] = np.append(feat_array[e], feat[e].reshape(1,-1), axis = 0) # 1 for horizontal vector, -1 means take original dimension
 
                 filelist_extracted.append(id)
@@ -419,7 +419,7 @@ def extract_all_files(filelist,
             gc.collect() # after every file we do garbage collection, otherwise our memory is used up quickly for some reason
 
         except Exception as e:
-            print "ERROR analysing file: " + fil + ": " + str(e)
+            print("ERROR analysing file: " + fil + ": " + str(e))
             err += 1
             if error_logwriter:
                 error_logwriter.writerow([fil,str(e)])
@@ -435,21 +435,21 @@ def extract_all_files(filelist,
             error_logfile.close()
 
     except Exception as e:
-        print "ERROR closing the output or log files: " + str(e)
+        print("ERROR closing the output or log files: " + str(e))
 
     end_time = time.time()
 
     if verbose:
-        print "FEATURE EXTRACTION FINISHED.", n, "file(s) processed,", n_extracted, "successful. Duration:", timestr(end_time-start_time)
+        print("FEATURE EXTRACTION FINISHED.", n, "file(s) processed,", n_extracted, "successful. Duration:", timestr(end_time-start_time))
         if err > 0:
-            print err, "file(s) had ERRORs during feature extraction.",
+            print(err, "file(s) had ERRORs during feature extraction.", end=' ')
             if log_Errors:
-                print "See", err_log_filename
+                print("See", err_log_filename)
             else:
-                print
+                print()
         if out_file:
             opt_ext = '.h5' if out_HDF5 else ''
-            print "Feature file(s):", out_file + "." + str(ext) + opt_ext
+            print("Feature file(s):", out_file + "." + str(ext) + opt_ext)
 
     if out_file is None:
         return filelist_extracted, feat_array
@@ -503,10 +503,10 @@ if __name__ == '__main__':
 
     audiofile_types = get_supported_audio_formats()
 
-    print "Extracting features:", feature_types
-    print "From files in:", args.input_path
-    print "File types:",
-    print "ALL FILES (NO EXTENSION CHECK)" if args.noextensioncheck else audiofile_types
+    print("Extracting features:", feature_types)
+    print("From files in:", args.input_path)
+    print("File types:", end=' ')
+    print("ALL FILES (NO EXTENSION CHECK)" if args.noextensioncheck else audiofile_types)
 
 
     # BATCH RP FEATURE EXTRACTION:

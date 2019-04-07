@@ -36,19 +36,19 @@ def plotssd(features, reshape=True, rows=24, cols=7):
 
     plt.figure()
     plt.imshow(features, origin='lower', aspect='auto', interpolation='nearest', cmap='jet')
-    plt.xticks(range(0, cols), ['mean', 'var', 'skew', 'kurt', 'median', 'min', 'max'])
+    plt.xticks(list(range(0, cols)), ['mean', 'var', 'skew', 'kurt', 'median', 'min', 'max'])
     plt.ylabel('Frequency [Bark]')
     plt.show()
 
 
 def plotrh(hist,showbpm=True):
-    xrange = range(0, hist.shape[0])
+    xrange = list(range(0, hist.shape[0]))
     plt.bar(xrange, hist)  # 50, normed=1, facecolor='g', alpha=0.75)
 
     plt.title('Rhythm Histogram')
     if showbpm:
         mod_freq_res = 1.0 / (2**18/44100.0)
-        plot_index = range(0, hist.shape[0] + 1, 5)  # 5 = step for xticks
+        plot_index = list(range(0, hist.shape[0] + 1, 5))  # 5 = step for xticks
         plot_base = np.array(plot_index) + 1  # + 1 otherwise we start we 0 bpm
         bpm = np.around(plot_base * mod_freq_res * 60, 0).astype(int)  # integer for legend
         plt.xticks(plot_index, bpm)
@@ -102,10 +102,10 @@ def plot_waveform(samples, plot_width=6, plot_height=4):
 
     # mono wave data is either only 1dim in shape or has a 2dim shape with 1 channel only
     if (len(samples.shape) == 1) or (samples.shape[1] == 1):
-        print "Plotting Mono"
+        print("Plotting Mono")
         plotmono_waveform(samples, plot_width, plot_height)
     else:
-        print "Plotting Stereo"
+        print("Plotting Stereo")
         plotstereo_waveform(samples, plot_width, plot_height)
 
 

@@ -74,7 +74,7 @@ class CSVFeatureWriter(FeatureWriter):
             raise RuntimeError("File or writer is not open yet. Call open first!")
         # TODO: check if all feat.keys() == self.ext
 
-        for e in feat.keys():
+        for e in list(feat.keys()):
             f=feat[e].tolist()
             f.insert(0,id)      # add filename/id before vector (to include path, change fil to filename)
             if id2 is not None: # add secondary identifier
@@ -221,7 +221,7 @@ class HDF5FeatureWriter(FeatureWriter):
         if self.h5tables is None:
             self._init_tables(feat)
 
-        for e in feat.keys():
+        for e in list(feat.keys()):
             # write features and file_ids
             self.h5tables[e].append(feat[e].reshape((1,-1))) # make it a row vector instead of column
             self.idtables[e].append([id])  # it's important to have the list brackets here
@@ -246,7 +246,7 @@ class HDF5FeatureWriter(FeatureWriter):
         if self.h5tables is None:
             self._init_tables(feat)
 
-        for e in feat.keys():
+        for e in list(feat.keys()):
             # write features and file_ids
             self.h5tables[e].append(feat[e]) # no reshape here
             self.idtables[e].append(ids)  # assumed to be list already
@@ -287,7 +287,7 @@ def check_id_consistency(ids):
     '''check for ID consistency
     ids: dict containing multiple lists of ids, which should all be the same
     '''
-    ext = ids.keys()
+    ext = list(ids.keys())
     for e in ext[1:]:
         if not len(ids[ext[0]]) == len(ids[e]):
             raise ValueError("Feature files have different number of ID entries! " +
@@ -403,7 +403,7 @@ def read_csv_features(filenamestub,ext=('rh','ssd','rp'),separate_ids=True,id_co
             # AFTER FOR LOOP: check_id_consistency(ids)
 
         if verbose:
-            print "Read", feat[e].shape[0], "feature vectors with dimension", feat[e].shape[1], ", type " + e.upper()
+            print("Read", feat[e].shape[0], "feature vectors with dimension", feat[e].shape[1], ", type " + e.upper())
 
     # check if we have duplicates in the ids
     if separate_ids and not as_dataframe:
@@ -449,8 +449,8 @@ def read_multiple_feature_files(list_of_filenames, common_path = '', feature_typ
         ids, feat = read_csv_features(common_path + os.sep + filen, feature_types, verbose=verbose, single_id_list=True)
         ids_out.extend(ids)
 
-        for e in feat.keys(): # for each element in dict add to the feat_out dict
-            if e not in feat_out.keys(): # first file: create array
+        for e in list(feat.keys()): # for each element in dict add to the feat_out dict
+            if e not in list(feat_out.keys()): # first file: create array
                 feat_out[e] = feat[e]
             else: # others: append
                 feat_out[e] = np.append(feat_out[e],feat[e],axis=0)
@@ -461,7 +461,7 @@ def read_multiple_feature_files(list_of_filenames, common_path = '', feature_typ
 def write_features_csv_batch(ids, feat, out_path, verbose=True):
     '''write entire feature matrices to multiple feature files in CSV file format'''
 
-    for ft in feat.keys():
+    for ft in list(feat.keys()):
 
         if isinstance(ids, list):
             ids_df = ids  # one single list with filenames
@@ -474,7 +474,7 @@ def write_features_csv_batch(ids, feat, out_path, verbose=True):
         # write to output CSV
         outfile = out_path + '.' + ft  # + '.csv'
         if verbose:
-            print "Writing", outfile
+            print("Writing", outfile)
         dataframe.to_csv(outfile, header=None)
 
 
@@ -560,12 +560,12 @@ def load_hdf5_features(hdf_filename, verbose=True, ids_only=False, return_id2=Fa
         feat = hdf5_file.root.vec[:]
 
         if verbose: # just for info purposes
-            print "Read", feat.shape[0], "features with dimension", feat.shape[1],
+            print("Read", feat.shape[0], "features with dimension", feat.shape[1], end=' ')
             if hdf5_file.root.vec.attrs.__contains__('vec_type'):
-                print "type", hdf5_file.root.vec.attrs.vec_type,
+                print("type", hdf5_file.root.vec.attrs.vec_type, end=' ')
             if hdf5_file.root.vec.attrs.__contains__('vec_dim'):
-                print "dim", hdf5_file.root.vec.attrs.vec_dim,
-            print
+                print("dim", hdf5_file.root.vec.attrs.vec_dim, end=' ')
+            print()
 
     # check if we also have file_ids or file_ids2 tables (see HDF5FeatureWriter() class)
     ids = ids2 = None # default
@@ -649,7 +649,7 @@ def combine_multiple_hdf5_files(input_filelist_stubs, output_filestub, feature_t
     hdf_writer.open(output_filestub,feature_types)
 
     for i, filename in enumerate(input_filelist_stubs):
-        print "Reading file", filename
+        print("Reading file", filename)
         ids, feat = load_multiple_hdf5_feature_files(filename, feature_types)
 
         # check ids for consistency
@@ -658,11 +658,11 @@ def combine_multiple_hdf5_files(input_filelist_stubs, output_filestub, feature_t
         # if ok, collapse to just 1 ids list
         ids = ids[feature_types[0]]
 
-        print "Writing part", i + 1, "..."
+        print("Writing part", i + 1, "...")
         hdf_writer.write_features_batch(ids,feat)
 
     hdf_writer.close()
-    print "DONE:", output_filestub + ".*"
+    print("DONE:", output_filestub + ".*")
 
 
 # == GENERIC LOAD FUNCTIONS ==
@@ -687,7 +687,7 @@ def load_features(input_path, feature_types, as_dataframe=False, verbose=True):
         ids, feat = read_csv_features(input_path, feature_types, as_dataframe=as_dataframe, error_on_duplicates=False, verbose=verbose)
 
     # from the ids dict, we take only the first entry
-    ids = ids.values()[0]
+    ids = list(ids.values())[0]
     return ids, feat
 
 
@@ -709,7 +709,7 @@ def load_or_analyze_features(input_path, feature_types = ['rp','ssd','rh'], save
     :param input_path:
     :return:
     """
-    from rp_extract_batch import extract_all_files_generic
+    from .rp_extract_batch import extract_all_files_generic
 
     # not possible because of omitted file extensions in read_csv_features below
     #    if not os.path.exists(input_path):
@@ -720,7 +720,7 @@ def load_or_analyze_features(input_path, feature_types = ['rp','ssd','rh'], save
 
 
     # we accept and check for all audio file types supported
-    from audiofile_read import get_supported_audio_formats
+    from .audiofile_read import get_supported_audio_formats
     audiofile_types = get_supported_audio_formats()
 
     # these file times mean fresh extract
@@ -732,7 +732,7 @@ def load_or_analyze_features(input_path, feature_types = ['rp','ssd','rh'], save
     if os.path.isdir(input_path) or input_path.lower().endswith(extract_file_types):  # FRESH ANALYSIS from input path or .txt file
 
         if verbose:
-            print "Performing feature extraction from ", input_path
+            print("Performing feature extraction from ", input_path)
 
         # BATCH RP FEATURE EXTRACTION:
         # if output_file is given, will save features, otherwise not
@@ -757,7 +757,7 @@ def load_or_analyze_features(input_path, feature_types = ['rp','ssd','rh'], save
 
 def csv2arff(in_filenamestub,out_filenamestub,feature_types,add_class=True):
 
-    from classes_io import classes_from_filename
+    from .classes_io import classes_from_filename
 
     ids, features = read_csv_features(in_filenamestub,feature_types)
 
@@ -778,10 +778,10 @@ def csv2arff(in_filenamestub,out_filenamestub,feature_types,add_class=True):
 
         # WRITE ARFF
         out_filename = out_filenamestub + "." + ext + ".arff"
-        print "Saving " + out_filename + " ..."
+        print("Saving " + out_filename + " ...")
         save_arff(out_filename,df)
 
-    print "Finished."
+    print("Finished.")
 
 
 # convert NPZ (Numpy Pickle) to ARFF format
@@ -846,10 +846,10 @@ def csv2hdf5(csv_filename,hdf_filename,chunk_size=1000,verbose=True):
     for chunk in csv_reader:
         store.append('data', chunk)
         cnt += chunk.shape[0]
-        if verbose: print "processed", cnt, "rows"
+        if verbose: print("processed", cnt, "rows")
 
     store.close()
-    if verbose: print "Finished."
+    if verbose: print("Finished.")
 
 
 def hdf2csv(in_path, out_path, feature_types, verbose=True):
@@ -905,7 +905,7 @@ def sorted_feature_subset(features, ids_orig, ids_select):
     returns: sorted subset of the original features array
     '''
     new_feat = {}
-    for e in features.keys():
+    for e in list(features.keys()):
         if isinstance(features[e], pd.core.frame.DataFrame):
             # if features are already in a dataframe we just subindex
             new_feat[e] = features[e].ix[ids_select]
@@ -996,23 +996,23 @@ if __name__ == '__main__':
         hdf2csv(args.input_path, args.output_filestub, feature_types)
 
     else:
-        print "Reading", args.input_path
+        print("Reading", args.input_path)
 
         if args.arff: # try to load ARFF
             features, classes = load_arff(args.input_path)
-            print "Classes:" , classes.shape
+            print("Classes:" , classes.shape)
         elif args.hdf5: # try to load HDF5
             ids, features = load_hdf5_features(args.input_path)
-            print "Number of file ids:", len(ids)
+            print("Number of file ids:", len(ids))
         elif args.test: # testing some stuff
             #ids, feat = load_hdf5_features(args.input_path, verbose=True, ids_only=False, return_id2=False)
             ids = load_multiple_hdf5_feature_files(args.input_path, feature_types, verbose=True, ids_only=True)
-            print ids
+            print(ids)
             sys.exit()
         else: # if args.csv: # try to load CSV
             ids, features = read_csv_features1(args.input_path)
-            print "Number of file ids:", len(ids)
+            print("Number of file ids:", len(ids))
 
-        print "Feature dimensions:", features.shape
+        print("Feature dimensions:", features.shape)
         #print features
         #print ids

@@ -88,7 +88,7 @@ def read_multi_class_file(filename, delimiter='\t', stripfilenames=False, replac
     # get categories from the header
     categories = dataframe.columns.values.tolist()
     if verbose:
-        print 'Categories in CSV file:', ", ".join(categories)
+        print('Categories in CSV file:', ", ".join(categories))
 
     if replace_labels:
         # replace positive labels as 1 and negative or empty as 0
@@ -100,8 +100,8 @@ def read_multi_class_file(filename, delimiter='\t', stripfilenames=False, replac
         wrong_entries = np.where(np.logical_and(dataframe.values != 1, dataframe.values != 0))
         if len(wrong_entries[0]) > 0:
             for i,j in zip(wrong_entries[0], wrong_entries[1]):
-                print "Unrecognized entry in row", i+1, ", column", j+1, ":"
-                print dataframe.index[i] + ": '" + dataframe.iloc[i,j] + "'"
+                print("Unrecognized entry in row", i+1, ", column", j+1, ":")
+                print(dataframe.index[i] + ": '" + dataframe.iloc[i,j] + "'")
             raise ValueError("CSV contains unrecognized entries. Please correct CSV file or define pos_labels when calling read_multi_class_file function.")
 
     # make an in-place conversion to integer (if not possible, will throw error)
@@ -119,7 +119,7 @@ def write_class_file(filename, file_ids, class_labels, delimiter='\t'):
 
 def write_class_dict(filename, class_dict, delimiter='\t'):
     fil = open(filename,'w')
-    for f, c in class_dict.iteritems():
+    for f, c in class_dict.items():
         fil.write(f + delimiter + c + '\n') # python will convert \n to os.linesep
     fil.close()
 
@@ -138,7 +138,7 @@ def multi_class_table_tolist(dataframe, pos_label=1, delimiter=','):
 
     list_of_lists = []
     for idx, row in dataframe.iterrows():
-        row_list = [c for c, r in row.iteritems() if r==pos_label]
+        row_list = [c for c, r in row.items() if r==pos_label]
         row_string = delimiter.join(row_list)
         list_of_lists.append(row_string)
 
@@ -152,7 +152,7 @@ def multi_class_table_todict(dataframe, pos_label=1):
 
     class_dict = {}
     for id, row in dataframe.iterrows():
-        row_list = [c for c, r in row.iteritems() if r==pos_label]
+        row_list = [c for c, r in row.items() if r==pos_label]
         class_dict[id] = row_list
 
     return class_dict
@@ -198,8 +198,8 @@ def classes_from_filename(filenames,split_char=os.sep):
 
     # sanity check
     if len(set(classes)) == len(filenames):
-        print "Example file name:", filenames[0]
-        print "Example class label:", classes[0]
+        print("Example file name:", filenames[0])
+        print("Example class label:", classes[0])
         raise ValueError("Class label could not be derived from filename! Filename must contain a sub-directory path to be used as class label. Otherwise provide a class label file.")
 
     return classes
@@ -207,7 +207,7 @@ def classes_from_filename(filenames,split_char=os.sep):
 def classdict_from_filename(filenames,split_char=os.sep):
     '''derive class labels from filenames or relative paths and create a class dict out of both of them'''
     classes = classes_from_filename(filenames,split_char)  # get classes from relative path
-    class_dict = dict(zip(filenames, classes))    # Note: if the lists are big you should use from itertools import izip
+    class_dict = dict(list(zip(filenames, classes)))    # Note: if the lists are big you should use from itertools import izip
     return class_dict
 
 
@@ -229,7 +229,7 @@ def classes_to_numeric(class_labels, verbose=True, return_encoder = False):
 
     labelencoder = LabelEncoder()
     labelencoder.fit(class_labels)
-    if (verbose): print len(labelencoder.classes_), "classes:", ", ".join(list(labelencoder.classes_))
+    if (verbose): print(len(labelencoder.classes_), "classes:", ", ".join(list(labelencoder.classes_)))
     classes_num = labelencoder.transform(class_labels)
     if return_encoder:
         return (classes_num, labelencoder)
@@ -246,11 +246,11 @@ def classdict_to_numeric(class_dict, return_encoder = False):
 
     # this will create a new dict with old keys and numeric values
     if return_encoder:
-        classes_num, labelencoder = classes_to_numeric(class_dict.values(), return_encoder=return_encoder)
+        classes_num, labelencoder = classes_to_numeric(list(class_dict.values()), return_encoder=return_encoder)
     else:
-        classes_num = classes_to_numeric(class_dict.values())
+        classes_num = classes_to_numeric(list(class_dict.values()))
 
-    new_class_dict = (dict(zip(class_dict.keys(),classes_num)))
+    new_class_dict = (dict(list(zip(list(class_dict.keys()),classes_num))))
 
     if return_encoder:
         return (new_class_dict, labelencoder)
@@ -261,8 +261,8 @@ def classdict_to_numeric(class_dict, return_encoder = False):
 def classdict_to_numeric_with_encoder(class_dict, labelencoder):
     '''encode a the values in a given class dictionary with a given label encoder to numeric classes'''
 
-    classes_num = labelencoder.transform(class_dict.values())
-    return dict(zip(class_dict.keys(), classes_num))
+    classes_num = labelencoder.transform(list(class_dict.values()))
+    return dict(list(zip(list(class_dict.keys()), classes_num)))
 
 
 
@@ -300,7 +300,7 @@ def match_filenames(file_ids_featurefile, file_ids_classfile, strip_files=False,
     :param strip_files:
     :return: file_ids_matched
     '''
-    from rp_feature_io import check_duplicates
+    from .rp_feature_io import check_duplicates
 
     if strip_files:
         file_ids_classfile = strip_filenames(file_ids_classfile)
@@ -316,23 +316,23 @@ def match_filenames(file_ids_featurefile, file_ids_classfile, strip_files=False,
     file_ids_matching = set(file_ids_classfile).intersection(file_ids_featurefile)
 
     if verbose:
-        print len(file_ids_featurefile), "files in feature file(s)"
-        print len(file_ids_classfile), "files in class file"
-        print len(file_ids_matching), "files matching"
+        print(len(file_ids_featurefile), "files in feature file(s)")
+        print(len(file_ids_classfile), "files in class file")
+        print(len(file_ids_matching), "files matching")
 
     if print_nonmatching:  # output missing files
 
         diff = set(file_ids_classfile) - set(file_ids_matching)
         if len(diff) > 0:
-            print
-            print 'in class definition but not in audio feature files:\n'
-            for f in diff: print f
+            print()
+            print('in class definition but not in audio feature files:\n')
+            for f in diff: print(f)
 
         diff = set(file_ids_featurefile) - set(file_ids_matching)
         if len(diff) > 0:
-            print
-            print 'in audio feature files but not in class definition:\n'
-            for f in diff: print f
+            print()
+            print('in audio feature files but not in class definition:\n')
+            for f in diff: print(f)
 
     return list(file_ids_matching)
 
@@ -352,10 +352,10 @@ def align_features_and_classes(features, feature_ids, class_data, strip_files=Fa
     lower: whether or not to lower-case all characters before matching
     verbose: output statistics how many are being matched and the list of non-matched files
     '''
-    from rp_feature_io import sorted_feature_subset
+    from .rp_feature_io import sorted_feature_subset
 
     if isinstance(class_data, dict):
-        file_ids_classfile = class_data.keys()
+        file_ids_classfile = list(class_data.keys())
     elif isinstance(class_data, pd.DataFrame):
         file_ids_classfile = list(class_data.index)
     else:
@@ -380,7 +380,7 @@ def align_features_and_classes(features, feature_ids, class_data, strip_files=Fa
     # cut & resort the features according to matched ids (subset, if files are missing in class file)
     features = sorted_feature_subset(features, feature_ids, ids_matched)
 
-    if verbose: print "\nRetaining", features.values()[0].shape[0], "feature rows,", n_class_entries, "class entries."
+    if verbose: print("\nRetaining", list(features.values())[0].shape[0], "feature rows,", n_class_entries, "class entries.")
 
     return features, ids_matched, class_data
 
@@ -425,10 +425,10 @@ def match_and_reduce_class_dict(class_dict,new_file_ids,strip_files = True):
     '''
     if strip_files:
         new_file_ids = strip_filenames(new_file_ids)
-    print len(class_dict), "files in class definition file"
-    print len(new_file_ids), "files from audio feature analysis"
+    print(len(class_dict), "files in class definition file")
+    print(len(new_file_ids), "files from audio feature analysis")
     matching = set(class_dict.keys()).intersection(new_file_ids)
-    print len(matching), "files matching"
+    print(len(matching), "files matching")
     new_class_dict = reduce_class_dict(class_dict,matching)
     return new_class_dict
 
@@ -436,7 +436,7 @@ def match_and_reduce_class_dict(class_dict,new_file_ids,strip_files = True):
 def reduce_class_dict_to_classes(class_dict,reduced_list_of_classes):
     '''reduce a {filename: class} dictionary to a subset of classes given in list 'reduced_list_of_classes' '''
     new_class_dict = {}
-    for key, val in class_dict.iteritems():
+    for key, val in class_dict.items():
         if val in reduced_list_of_classes:
             new_class_dict[key] = val
     return new_class_dict
@@ -450,11 +450,11 @@ def reduce_class_dict_min_instances(class_dict, min_instances=2, raiseError=Fals
     :return: {filename: class} dictionary with entries removed where class does not fulfil minimum requirement
     '''
 
-    classes = class_dict.values()
+    classes = list(class_dict.values())
     class_stats = {c: classes.count(c) for c in set(classes)}
 
     retain_classes = []
-    for key, val in class_stats.iteritems():
+    for key, val in class_stats.items():
         if val >= min_instances: retain_classes.append(key)
     #retain_classes
     diff = len(set(classes)) - len(retain_classes)
@@ -462,12 +462,12 @@ def reduce_class_dict_min_instances(class_dict, min_instances=2, raiseError=Fals
         if raiseError:
             raise ValueError("Class requirement of minimum of", min_instances, "instances per class not fulfilled.")
         else:
-            print "Removing", diff, "classes for required minimum of", min_instances, "instances per class."
+            print("Removing", diff, "classes for required minimum of", min_instances, "instances per class.")
 
     new_class_dict = reduce_class_dict_to_classes(class_dict, retain_classes)
 
     if diff > 0:
-        print "Removed", len(class_dict) - len(new_class_dict), "file instances from class dictionary."
+        print("Removed", len(class_dict) - len(new_class_dict), "file instances from class dictionary.")
 
     return new_class_dict
 
@@ -478,7 +478,7 @@ def get_class_counts(class_data, printit=False):
        class_data must be passed Python dict or Pandas dataframe'''
 
     if isinstance(class_data, dict):
-        classes = class_data.values()
+        classes = list(class_data.values())
     elif isinstance(class_data, pd.DataFrame):
         classes = class_data.ix[:, 0].tolist()
     else:
@@ -486,8 +486,8 @@ def get_class_counts(class_data, printit=False):
 
     class_stats = {c: classes.count(c) for c in set(classes)}
     if (printit):
-        for key, val in class_stats.iteritems():
-            print key + ":", val
+        for key, val in class_stats.items():
+            print(key + ":", val)
     return class_stats
 
 
@@ -499,7 +499,7 @@ def get_filenames_for_class(class_dict,classname):
     classname: e.g. 'Jazz'
     '''
     key_list = []
-    for key,val in class_dict.iteritems():
+    for key,val in class_dict.items():
         if val == classname: key_list.append(key)
     return key_list
 
@@ -513,7 +513,7 @@ def get_baseline(class_data, printit=True):
     # print "Class counts:", class_counts
     max_class = max(class_counts.values())
     baseline = max_class * 1.0 / len(class_data)
-    if printit: print "Baseline: %.2f %% (max class=%d/%d)" % ((baseline * 100), max_class, len(class_data))
+    if printit: print("Baseline: %.2f %% (max class=%d/%d)" % ((baseline * 100), max_class, len(class_data)))
     return baseline
 
 
@@ -560,7 +560,7 @@ def strip_filenames(filenames, cut_path=True, cut_ext=True):
 def strip_filenames_in_dict(class_dict, cut_path=True, cut_ext=True):
     from os.path import basename, splitext
     new_class_dict = {}
-    for key, val in class_dict.iteritems():
+    for key, val in class_dict.items():
         if (cut_path): key = basename(key)
         if (cut_ext): key = splitext(key)[0]
         new_class_dict[key] = val

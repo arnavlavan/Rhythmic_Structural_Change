@@ -9,7 +9,7 @@ using the Rhythm Pattern audio analyzer (rp_extract.py)
 
 import os.path
 import argparse
-import cPickle
+import pickle
 import numpy as np
 
 from sklearn import preprocessing, svm
@@ -20,8 +20,8 @@ from sklearn.svm import SVC
 # sklearn >= 0.18
 from sklearn.model_selection import cross_val_score
 
-from rp_feature_io import load_or_analyze_features, concatenate_features
-from classes_io import *
+from .rp_feature_io import load_or_analyze_features, concatenate_features
+from .classes_io import *
 
 
 # STANDARDIZE DATA
@@ -58,7 +58,7 @@ def train_model(train_data, train_classes, print_accuracy = True): # with_probab
         # for multi-class train sets we do the accuracy column-wise and then compute the mean over all accuracies
         acc_per_column = np.sum(pred_train == train_classes, axis=0) * 100.0 / len(train_classes)
         mean_acc = np.mean(acc_per_column)
-        print "Accuracy on train set: %2.2f %%" % mean_acc
+        print("Accuracy on train set: %2.2f %%" % mean_acc)
 
     return model
 
@@ -85,7 +85,7 @@ def cross_validate_multiclass(model, features, classes, categories, folds=10, me
     # we iterate over the categories in class file columns here
     for c in range(len(categories)):
         if verbose:
-            print '.',
+            print('.', end=' ')
             sys.stdout.flush()
         cls = classes[:,c]
         a = cross_val_score(model, features, cls, scoring=measure, cv=folds)
@@ -101,22 +101,22 @@ def cross_validate_multiclass(model, features, classes, categories, folds=10, me
         #print "New Acc/Prec: %s\t%2.2f %%\t%2.2f %%" % (c,mean_acc2*100,mean_prec*100)
 
     if verbose:
-        print
+        print()
         sys.stdout.flush()
-    return zip(categories,acc)
+    return list(zip(categories,acc))
 
 
 # SAVE MODEL
 def save_model(filename,model,scaler=None,labelencoder=None,multi_categories=None):
     basename = os.path.splitext(filename)[0]
     with open(basename + ".model.pkl", 'wb') as f:
-        cPickle.dump(model, f, protocol=cPickle.HIGHEST_PROTOCOL)
+        pickle.dump(model, f, protocol=pickle.HIGHEST_PROTOCOL)
     if scaler:
         with open(basename + ".scaler.pkl", 'wb') as f:
-            cPickle.dump(scaler, f, protocol=cPickle.HIGHEST_PROTOCOL)
+            pickle.dump(scaler, f, protocol=pickle.HIGHEST_PROTOCOL)
     if labelencoder:
         with open(basename + ".labelenc.pkl", 'wb') as f:
-            cPickle.dump(labelencoder, f, protocol=cPickle.HIGHEST_PROTOCOL)
+            pickle.dump(labelencoder, f, protocol=pickle.HIGHEST_PROTOCOL)
     if multi_categories:
         with open(basename + ".multilabels.csv", 'w') as f:
             f.write('\n'.join(multi_categories))
@@ -128,12 +128,12 @@ def load_model(filename,scaler=True,labelencoder=True,multilabels=False):
 
     # load model
     f = open(basename + ".model.pkl", 'rb')
-    model = cPickle.load(f)
+    model = pickle.load(f)
     f.close()
 
     if scaler:
         f = open(basename + ".scaler.pkl", 'rb')
-        scaler = cPickle.load(f)
+        scaler = pickle.load(f)
         f.close()
     else: scaler = None
 
@@ -141,7 +141,7 @@ def load_model(filename,scaler=True,labelencoder=True,multilabels=False):
         labelfile = basename + ".labelenc.pkl"
         if os.path.isfile(labelfile): # check if exists
             f = open(labelfile, 'rb')
-            labelencoder = cPickle.load(f)
+            labelencoder = pickle.load(f)
             f.close()
         else: labelencoder = None
     else: labelencoder = None
@@ -232,7 +232,7 @@ if __name__ == '__main__':
         else:
             # try to derive classes from filename (e.g. sub-directory)
             classes = classes_from_filename(ids)
-            class_dict = dict(zip(ids, classes))
+            class_dict = dict(list(zip(ids, classes)))
 
         # convert to numeric classes
         if args.multiclassfile:
@@ -250,37 +250,37 @@ if __name__ == '__main__':
         # CONCATENATE MULTIPLE FEATURES
         # (optional but needs to be done in same way at prediction time)
         features = concatenate_features(feat, feature_types)
-        print "Using features:", " + ".join(feature_types)
+        print("Using features:", " + ".join(feature_types))
 
         # STANDARDIZE
         features, scaler = standardize(features)
 
         # TRAIN + SAVE MODEL
         if args.train:
-            print "Training model:"
+            print("Training model:")
             model = train_model(features, classes_num)
             # save model
             save_model(args.model_file, model, scaler, labelencoder, multi_categories)
-            print "Saved model to", args.model_file + ".*"
+            print("Saved model to", args.model_file + ".*")
 
         # CROSS-VALIDATE
         if do_crossval:
-            print "CROSS-VALIDATION:"
+            print("CROSS-VALIDATION:")
             if not args.train:
                 # if we trained, we have a model already; otherwise we initialize a fresh one
                 model = svm.SVC(kernel='linear')
 
             if not args.multiclassfile:
                 acc = cross_validate(model, features, classes_num, crossval_folds, crossval_measure)
-                print "Fold " + crossval_measure + ":", acc
-                print "Avg " + crossval_measure + " (%d folds): %2.2f %% (std.dev.: %2.2f)" % (len(acc), (np.mean(acc)*100), np.std(acc)*100)
+                print("Fold " + crossval_measure + ":", acc)
+                print("Avg " + crossval_measure + " (%d folds): %2.2f %% (std.dev.: %2.2f)" % (len(acc), (np.mean(acc)*100), np.std(acc)*100))
             else:
                 acc_zip = cross_validate_multiclass(model, features, classes_num, multi_categories, crossval_folds, crossval_measure, verbose=False)
                 for c, a in acc_zip:
-                    print "Class: %s\t%2.2f %%" % (c,a*100)
-                acc_per_class = zip(*acc_zip)[1] # unzip to 2 lists and take second one
+                    print("Class: %s\t%2.2f %%" % (c,a*100))
+                acc_per_class = list(zip(*acc_zip))[1] # unzip to 2 lists and take second one
                 avg_acc = np.mean(acc_per_class)
-                print "Average " + crossval_measure + ":\t%2.2f %%" % (avg_acc*100)
+                print("Average " + crossval_measure + ":\t%2.2f %%" % (avg_acc*100))
 
     else: # do CLASSIFICATION only when not training
 
@@ -317,10 +317,10 @@ if __name__ == '__main__':
         features_to_classify = scaler.transform(features_to_classify)
 
         # CLASSIFY
-        print "Using features:", " + ".join(feature_types)
-        print "Classification:"
+        print("Using features:", " + ".join(feature_types))
+        print("Classification:")
         if labelencoder:
-            print len(labelencoder.classes_), "possible classes:", ", ".join(list(labelencoder.classes_))
+            print(len(labelencoder.classes_), "possible classes:", ", ".join(list(labelencoder.classes_)))
 
         predictions = classify(model, features_to_classify, labelencoder)
 
@@ -329,17 +329,17 @@ if __name__ == '__main__':
 
             # single label classification
             if args.output_filename:
-                print "Writing to output file: ", args.output_filename
+                print("Writing to output file: ", args.output_filename)
                 write_class_file(args.output_filename, ids, predictions)
             else:
                 # just print to stdout
                 for (i, label) in zip(ids,predictions):
-                    print i + ":\t",label
+                    print(i + ":\t",label)
         else:
             # multi label classification
 
             if args.output_filename:
-                print "Writing to output file: ", args.output_filename
+                print("Writing to output file: ", args.output_filename)
 
                 if args.multiclasstable:
                     # write as table with x entries for positive categories
@@ -357,4 +357,4 @@ if __name__ == '__main__':
                 pred_df = pd.DataFrame(predictions, index=ids, columns=multi_categories)
                 pred_df.replace(0, '', inplace=True)
                 pred_df.replace(1, 'x', inplace=True)
-                print pred_df
+                print(pred_df)
