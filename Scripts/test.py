@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 ### ONE SONG ONLY --> Need to run on all songs
 #samplerate, samplewidth, wavedata = audiofile_read.audiofile_read("../data/0074 omer adam - no'etzet mabat.mp3")
-samplerate, samplewidth, wavedata = audiofile_read.audiofile_read("C:/Users/OWNER/Dropbox/1phd/database/files/0666 aviv geffen - achshav meunan.mp3")
+samplerate, samplewidth, wavedata = audiofile_read.audiofile_read("../data/0666 aviv geffen - achshav meunan.mp3")
 
 
 # 4 samples from left and right ---> should be changed to 1,2,4,8,16,32 and after preform "mean" on all vectors (note for the zeros in the beginnning and the end)
