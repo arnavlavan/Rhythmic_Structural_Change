@@ -1,12 +1,12 @@
 
-from rp_extract_dir import rp_extract
-from rp_extract_dir import audiofile_read
+from rp_extract import rp_extract
+from rp_extract import audiofile_read
 import numpy as np
 import matplotlib.pyplot as plt
 
 ### ONE SONG ONLY --> Need to run on all songs
 #samplerate, samplewidth, wavedata = audiofile_read.audiofile_read("../data/0074 omer adam - no'etzet mabat.mp3")
-samplerate, samplewidth, wavedata = audiofile_read.audiofile_read("../data/0666 aviv geffen - achshav meunan.mp3")
+samplerate, samplewidth, wavedata = audiofile_read.audiofile_read("C:/Users/OWNER/Dropbox/1phd/database/files/0666 aviv geffen - achshav meunan.mp3")
 
 
 # 4 samples from left and right ---> should be changed to 1,2,4,8,16,32 and after preform "mean" on all vectors (note for the zeros in the beginnning and the end)
@@ -28,7 +28,7 @@ for i in range(6):
     featSum = np.sum(featTmp['rp'],1)
     if i == 0:
         featAll = np.zeros(len(featSum)*6)
-        timeVec = range(len(featSum)*6)
+        timeVec = list(range(len(featSum)*6))
     featAll[i:len(featSum)*6:6] = featSum
 
 
