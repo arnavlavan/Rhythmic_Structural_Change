@@ -1,3 +1,5 @@
 /.pydevproject
 *.pyc
 /.idea/
+*.mp3
+*.pkl
