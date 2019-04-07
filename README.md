@@ -2,6 +2,10 @@
 
 This project's goal is to calculate the Structural Change (as defined in a paper by Mauch and levy, [Structural change on multiple time scales as a correlate of musical complexity](http://matthiasmauch.net/_pdf/mauch_scm_2011.pdf)) of rhythmic patterns in music. At the moment it is based on the RP_extract code. Perhaps later on additional audio features, such as chroma and MFCC, would be added as input vectors for the SC calculation. This is part of an on-going research, feel free to contact me. Adam
 
+## Changes and remarks:
+1. Original RP_extract repository was converted to python 3 using 2to3. Within the audiofile_read.py, parantheses were manually added to all print commands.
+2. The RP_extract original repository uses an old wavio.py version, supplied within the repository, which must be used at the moment (update marked as a todo).
+
 
 # RP_extract:
 ## Rhythm Pattern Audio Feature Extractor
