@@ -2,6 +2,7 @@
 import rp_extract
 import audiofile_read
 import numpy as np
+from matplotlib import __version__  as matplotlib__version__
 import matplotlib.pyplot as plt
 import pickle
 import os
@@ -81,7 +82,8 @@ for filename in os.listdir(filepath):
         if PLOT:
             timeVec = list(range(len(rpSum)))
             plt.plot(np.tile(timeVec,(6,1)).T,rhytem_sc.T)
-            plt.hold
+            if matplotlib__version__ < '3': # hold is deprecated in matplotlib 3.0.0, hold supposed to be always on
+                plt.hold
             plt.plot(timeVec, rhytem_sc_avg,c='k',linewidth=3.0)
             lgnd = SUMMERY_N.tolist()
             lgnd.append('avg')
