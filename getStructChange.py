@@ -16,6 +16,8 @@ def KL(a,b):
     return np.sum(np.multiply(a,np.log(np.divide(a,b)))) ## AMIR: consider adding  "/ len(a)" for normalization
 
 def calcD(vecA,vecB):
+    vecA = vecA / len(vecA)
+    vecB = vecB / len(vecB)
     vecAvg = (vecA+vecB) / 2
     KLA = KL(vecA,vecAvg)
     KLB = KL(vecB,vecAvg)
@@ -80,7 +82,7 @@ for filename in os.listdir(filepath):
             timeVec = list(range(len(rpSum)))
             plt.plot(np.tile(timeVec,(6,1)).T,rhytem_sc.T)
             plt.hold
-            plt.plot(timeVec, rhytem_sc_avg)
+            plt.plot(timeVec, rhytem_sc_avg,c='k',linewidth=3.0)
             lgnd = SUMMERY_N.tolist()
             lgnd.append('avg')
             plt.legend(lgnd)
