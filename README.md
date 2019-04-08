@@ -6,6 +6,14 @@ This project's goal is to calculate the Structural Change (as defined in a paper
 1. Original RP_extract repository was converted to python 3 using 2to3. Within the audiofile_read.py, parantheses were manually added to all print commands.
 2. The RP_extract original repository uses an old wavio.py version, supplied within the repository, which must be used at the moment (update marked as a todo).
 
+## Executing the code:
+1. git clone https://github.com/arnavlavan/Rhythmic_Structural_Change.git
+2. Copy all your MP3 files to /data/mp3/
+3. run getStructChange.py from the main directory
+4. if PLOT == True, the code will pause after every song and show a plot of the analysis - To continue close the plot
+5. Eventually all data is saved under /data/pkl/ with the same mp3 filename but with a *.pkl extension
+
+
 
 # RP_extract:
 ## Rhythm Pattern Audio Feature Extractor
