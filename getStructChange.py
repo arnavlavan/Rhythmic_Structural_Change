@@ -79,7 +79,7 @@ for filename in os.listdir(filepath):
         if PLOT:
             timeVec = list(range(len(rpSum)))
             plt.plot(np.tile(timeVec,(6,1)).T,rhytem_sc.T)
-            plt.hold
+            #plt.hold
             plt.plot(timeVec, rhytem_sc_avg)
             lgnd = SUMMERY_N.tolist()
             lgnd.append('avg')
