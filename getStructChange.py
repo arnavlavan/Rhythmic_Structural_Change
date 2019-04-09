@@ -11,7 +11,7 @@ import os
 filepath = 'data/mp3/'
 filepath_pkl = 'data/pkl/'
 SUMMERY_N = np.array([1,2,4,8,16,32])
-PLOT = True
+PLOT = False
 
 def KL(a,b):
     return np.sum(np.multiply(a,np.log(np.divide(a,b)))) ## AMIR: consider adding  "/ len(a)" for normalization
@@ -54,23 +54,23 @@ for filename in os.listdir(filepath):
         save2data('rp_sum', rpSum)
 
         ### calculate sc for each N
-        rhytem_sc = np.zeros((len(SUMMERY_N),len(rpSum)))
+        rhythm_sc = np.zeros((len(SUMMERY_N),len(rpSum)))
         for j,sumN in enumerate(SUMMERY_N):
             for i in range(len(rpSum)):
                 if i < sumN or len(rpSum) - i <= sumN:
                     continue
-                rhytem_sc[j][i] = calcD(rpSum[i-sumN:i+1],rpSum[i:i+sumN+1])
+                rhythm_sc[j][i] = calcD(rpSum[i-sumN:i+1],rpSum[i:i+sumN+1])
 
 
         ### calculate average sc
-        goodVals = np.sum(rhytem_sc != 0, 0)
-        rhytem_sc_avg = np.zeros(rhytem_sc.shape[1])
+        goodVals = np.sum(rhythm_sc != 0, 0)
+        rhythm_sc_avg = np.zeros(rhythm_sc.shape[1])
         goodIdxs = np.where(goodVals != 0)
-        rhytem_sc_avg[goodIdxs] = (np.sum(rhytem_sc, 0))[goodIdxs] / goodVals[goodIdxs]
+        rhythm_sc_avg[goodIdxs] = (np.sum(rhythm_sc, 0))[goodIdxs] / goodVals[goodIdxs]
 
-        save2data('rp_sc', rhytem_sc)
+        save2data('rp_sc', rhythm_sc)
         save2data('rp_sc_N', SUMMERY_N)
-        save2data('rp_sc_avg', rhytem_sc_avg)
+        save2data('rp_sc_avg', rhythm_sc_avg)
 
 
         filename_pkl = filename.split('.mp3')[0]+'.pkl'
@@ -81,10 +81,10 @@ for filename in os.listdir(filepath):
         #### test --> plot sc for all sumN and avg
         if PLOT:
             timeVec = list(range(len(rpSum)))
-            plt.plot(np.tile(timeVec,(6,1)).T,rhytem_sc.T)
+            plt.plot(np.tile(timeVec,(6,1)).T,rhythm_sc.T)
             if matplotlib__version__ < '3': # hold is deprecated in matplotlib 3.0.0, hold supposed to be always on
                 plt.hold
-            plt.plot(timeVec, rhytem_sc_avg,c='k',linewidth=3.0)
+            plt.plot(timeVec, rhythm_sc_avg,c='k',linewidth=3.0)
             lgnd = SUMMERY_N.tolist()
             lgnd.append('avg')
             plt.legend(lgnd)
