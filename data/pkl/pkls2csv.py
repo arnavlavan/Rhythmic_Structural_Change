@@ -10,7 +10,7 @@ for file in os.listdir():
         templist = []
         templist.append(file[:4])
         songdata = pickle.load(open(file, "rb"))
-        templist.append(numpy.sum(songdata['rp_sc_avg']))
+        templist.append(numpy.mean(songdata['rp_sc_avg']))
         rhythmSC.append(templist)
 
 
