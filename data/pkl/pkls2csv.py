@@ -15,3 +15,7 @@ for file in os.listdir():
 
 
 print(len(rhythmSC))
+
+with open('rhythmSC.csv', 'w', newline='') as csvout:     #write output lists to csv files
+                    writer = csv.writer(csvout)
+                    writer.writerows(rhythmSC)
