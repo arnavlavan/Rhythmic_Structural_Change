@@ -11,7 +11,7 @@ import os
 filepath = 'data/mp3/'
 filepath_pkl = 'data/pkl/'
 SUMMERY_N = np.array([1,2,4,8,16,32])
-PLOT = False
+PLOT = True
 
 def KL(a,b):
     return np.sum(np.multiply(a,np.log(np.divide(a,b)))) ## AMIR: consider adding  "/ len(a)" for normalization
